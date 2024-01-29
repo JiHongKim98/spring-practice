@@ -1,0 +1,63 @@
+package hellow.servlet.web.frontcontroller.v3;
+
+import hellow.servlet.web.frontcontroller.ModelView;
+import hellow.servlet.web.frontcontroller.MyView;
+import hellow.servlet.web.frontcontroller.v3.Controller.MemberFormControllerV3;
+import hellow.servlet.web.frontcontroller.v3.Controller.MemberListControllerV3;
+import hellow.servlet.web.frontcontroller.v3.Controller.MemberSaveControllerV3;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
+@WebServlet(name = "frontControllerServletV3", urlPatterns = "/front-controller/v3/*")
+public class FrontControllerServletV3 extends HttpServlet {
+
+    private Map<String, ControllerV3> controllerMap = new HashMap<>();
+
+    public FrontControllerServletV3() {
+        controllerMap.put("/front-controller/v3/members/new-form", new MemberFormControllerV3());
+        controllerMap.put("/front-controller/v3/members/save", new MemberSaveControllerV3());
+        controllerMap.put("/front-controller/v3/members", new MemberListControllerV3());
+    }
+
+    @Override
+    protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        System.out.println("FrontControllerServlet.service");
+
+        String requestURI = request.getRequestURI();
+
+        ControllerV3 controller = controllerMap.get(requestURI);
+        if (controller == null) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+
+        Map<String, String> paramMap = createParamMap(request);
+
+        ModelView modelView = controller.process(paramMap);
+
+        String viewName = modelView.getViewName();  // view의 논리이름 new-form
+        MyView view = viewResolver(viewName);
+
+        view.render(modelView.getModel(), request, response);
+    }
+
+    private MyView viewResolver(String viewName) {
+        MyView view = new MyView("/WEB-INF/views/" + viewName + ".jsp");
+        return view;
+    }
+
+    private Map<String, String> createParamMap(HttpServletRequest request) {
+        Map<String, String> paramMap = new HashMap<>();
+        request.getParameterNames().asIterator()
+                .forEachRemaining(paramName -> paramMap.put(paramName, request.getParameter(paramName)));
+
+        return paramMap;
+    }
+}

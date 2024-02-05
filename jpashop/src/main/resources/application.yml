@@ -1,0 +1,23 @@
+spring:
+  datasource:
+    url: jdbc:h2:tcp://localhost/~/jpashop
+    username: sa
+    password:
+  driver-class-name: org.h2.Driver
+
+  output:
+    ansi.enabled: always
+
+  jpa:
+    hibernate:
+      ddl-auto: create  # create : 자동으로 DB 테이블 생성
+    properties:
+      hibernate:
+        format_sql: true
+        default_batch_fetch_size: 100
+        #show_sql: true
+    open-in-view: true  # OSIV(Open-Session-In-View) 옵션 default: true
+
+logging.level:
+  org.hibernate.SQL: debug
+  #org.hibernate.orm.jdbc.bind: trace # SQL 쿼리 로그
